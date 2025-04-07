@@ -1,0 +1,31 @@
+name: Cataklysm
+version: 0.1.0
+load: startup
+main: main.Cataklysm
+api-version: 1.21.4
+
+commands:
+   vanish:
+      description: /vanish
+   borderincrease:
+      description: /borderincrease
+   spawn:
+      description: /spawn
+   menu:
+      description: /menu
+   home:
+      description: /home
+   sethome:
+      description: /sethome
+   fly:
+      description: /fly
+   getcoordinates:
+      description: /getcoordinates
+   coordinates:
+      description: /coordinates
+   serverboost:
+      description: /serverboost
+   test:
+      description: /test
+   createshop:
+      description: /createshop
