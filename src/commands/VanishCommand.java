@@ -11,14 +11,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 
 import main.Cataklysm;
 
 public class VanishCommand implements CommandExecutor, Listener{
 
 	public static List<Player> vanished = new ArrayList<>();
+	private Plugin plugin = Cataklysm.getPlugin(Cataklysm.class);	
 	
-	@SuppressWarnings("deprecation")
 	public boolean onCommand(CommandSender sender, Command command, String lable, String[] args) {
 		if(sender instanceof Player) {
 			Player player = (Player) sender;
@@ -40,7 +41,7 @@ public class VanishCommand implements CommandExecutor, Listener{
 					//Macht den Spieler unsichtbar
 					for
 					(Player all : Bukkit.getServer().getOnlinePlayers())
-                    { all.showPlayer(player); }
+                    { all.showPlayer(plugin, player); }
 					//stellt Vanish an
 					} else { if(!vanished.contains(player)) {
 					
@@ -56,7 +57,7 @@ public class VanishCommand implements CommandExecutor, Listener{
 					(Player all : Bukkit.getServer().getOnlinePlayers())
 						if(all.hasPermission("cataklysm.vanish.see")){}
 						else
-                    { all.hidePlayer(player); }
+                    { all.hidePlayer(plugin, player); }
 				} //Restlicher Player Feedback
 			}
 				} else
@@ -87,7 +88,7 @@ public class VanishCommand implements CommandExecutor, Listener{
 					//Macht den Spieler unsichtbar
 					for
 					(Player all : Bukkit.getServer().getOnlinePlayers())
-                    { all.showPlayer(target); }
+                    { all.showPlayer(plugin, target); }
 					//stellt Vanish an
 					} else if(vanished.contains(target) == false) {
 					
@@ -104,7 +105,7 @@ public class VanishCommand implements CommandExecutor, Listener{
 					(Player all : Bukkit.getServer().getOnlinePlayers())
 						if(all.hasPermission("cataklysm.vanish.see")){}
 						else
-                    { all.hidePlayer(target); }
+                    { all.hidePlayer(plugin, target); }
 					
 					
 				} //Restlicher Player Feedback

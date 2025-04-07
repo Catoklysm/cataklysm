@@ -6,17 +6,16 @@ import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.plugin.Plugin;
 
+import configManager.configManager;
 import main.Cataklysm;
 
 public class MenuCommand implements CommandExecutor{
-	
-	private Plugin plugin = Cataklysm.getPlugin(Cataklysm.class);
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -34,8 +33,11 @@ public class MenuCommand implements CommandExecutor{
 				int remainingMinutes = minutes % 60;
 			    int days = hours / 24;  // 24 hours = 1 day
 			    int remainingHours = hours % 24;  // Remaining hours after days
+			    
+				configManager.PlayerData data = configManager.getPlayerData(player);
+				FileConfiguration config = data.getConfig();
 				
-				String firstJoinTime = plugin.getConfig().getString(player.getUniqueId().toString() + ".firstjoin");
+				String firstJoinTime = config.getString("firstjoin");
 			    if (firstJoinTime == null) {
 			        firstJoinTime = "Unknown"; // If the first join time is not found, set it as "Unknown"
 			    }

@@ -8,6 +8,7 @@ import java.util.Calendar;
 import org.bukkit.Bukkit;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 
 import commands.VanishCommand;
+import configManager.configManager;
 import main.Cataklysm;
 
 public class JoinEvent implements Listener {
@@ -29,33 +31,41 @@ public class JoinEvent implements Listener {
 	    return sdf.format(cal.getTime());
 	}
 	
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void OnJoin(PlayerJoinEvent e) {
 		
-		//VANISH 
-		
 		Player p = e.getPlayer();
+		configManager.getPlayerData(p);
+		configManager.getPlayerData(p).save();
+	    
 			if(p.hasPlayedBefore() == true){
 			
 				e.setJoinMessage("§a[+] §7" + p.getName());
 		}
+			
+		//Vanish
 		for(Player vanish : VanishCommand.vanished) {
 			
 			if(p.hasPermission("cataklysm.vanish.see")) {
 			} else
-				p.hidePlayer(vanish);
+				p.hidePlayer(plugin, vanish);
 		}
 		
 		
 		if(p.hasPlayedBefore() == false){
-		    plugin.getConfig().set(p.getUniqueId().toString() + ".firstjoin", getTime());
-		    plugin.saveConfig();
+			
+			configManager.PlayerData data = configManager.getPlayerData(p);
+			FileConfiguration config = data.getConfig();
+			
+		    config.set("firstjoin", getTime());
+			data.save();
+			
 			e.setJoinMessage(null);
 			Bukkit.getWorld("world").setClearWeatherDuration(600 * 20);
 			Bukkit.getWorld("world").setThunderDuration(0);
 			Bukkit.getWorld("world").setWeatherDuration(0);
 			Bukkit.broadcastMessage("§6Welcome " + p.getName() + "!");
+			
 			p.sendMessage("§6");
 			p.sendMessage("§aOur Server has a limited Worldborder that we extend together!");
 			p.sendMessage("§eUse §6/menu §eto access helpful commands!");
@@ -87,5 +97,8 @@ public class JoinEvent implements Listener {
 			
 		}
 	}
+
+
+	
 
 }

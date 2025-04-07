@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import commands.VanishCommand;
+import configManager.configManager;
 
 public class QuitEvent implements Listener {
 	
@@ -17,6 +18,9 @@ public class QuitEvent implements Listener {
 	public void OnQuit(PlayerQuitEvent e) {
 		
 		Player p = e.getPlayer();
+		configManager.getPlayerData(p);
+		configManager.getPlayerData(p).save();
+		
 			if(VanishCommand.vanished.contains(p)){
 			VanishCommand.vanished.remove(p);
 			e.setQuitMessage(null);

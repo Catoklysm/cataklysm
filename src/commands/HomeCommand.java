@@ -6,31 +6,33 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 
+import configManager.configManager;
 import main.Cataklysm;
 
 public class HomeCommand implements CommandExecutor, Listener{
-	
-	private Plugin plugin = Cataklysm.getPlugin(Cataklysm.class);
 	
 	public boolean onCommand(CommandSender sender, Command command, String lable, String[] args) {
 		if(sender instanceof Player) {
 			Player player = (Player) sender;
 			
 			if(player.hasPermission("cataklysm.home")) {
+				
+				configManager.PlayerData data = configManager.getPlayerData(player);
+				FileConfiguration config = data.getConfig();
 
-				if (plugin.getConfig().contains(player.getUniqueId() + ".home")) {
-				    World world = Bukkit.getWorld(plugin.getConfig().getString(player.getUniqueId() + ".home.world"));
-				    double x = plugin.getConfig().getDouble(player.getUniqueId() + ".home.x");
-				    double y = plugin.getConfig().getDouble(player.getUniqueId() + ".home.y");
-				    double z = plugin.getConfig().getDouble(player.getUniqueId() + ".home.z");
-				    float yaw = (float) plugin.getConfig().getDouble(player.getUniqueId() + ".home.yaw");
+				if (config.contains("home")) {
+				    World world = Bukkit.getWorld(config.getString("home.world"));
+				    double x = config.getDouble("home.x");
+				    double y = config.getDouble("home.y");
+				    double z = config.getDouble("home.z");
+				    float yaw = (float) config.getDouble("home.yaw");
 
 				    if (world == null) {
-				        player.sendMessage("§cError: The world §6'" + plugin.getConfig().getString(player.getUniqueId() + ".home.world") + "'§c is not loaded correctly.");
+				        player.sendMessage("§cError: The world §6'" + config.getString("home.world") + "'§c is not loaded correctly.");
 				        return false;
 				    }
 				  //  Location home = new Location(world, Math.round(x) + 0.5, y , Math.round(z) + 0.5, Math.round(yaw / 45.0f) * 45.0f, 0);

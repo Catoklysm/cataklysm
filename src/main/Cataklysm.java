@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import commands.BorderIncreaseCommand;
 import commands.CoordinatesCommand;
+import commands.CreateShopCommand;
 import commands.FlyCommand;
 import commands.GetCoordinatesCommand;
 import commands.HomeCommand;
@@ -24,6 +25,7 @@ import commands.SetHomeCommand;
 import commands.SpawnCommand;
 import commands.TestCommand;
 import commands.VanishCommand;
+import listener.BlockPlace;
 import listener.JoinEvent;
 import listener.MobSpawnEvent;
 import listener.OnBlockMultiPlaceEvent;
@@ -32,6 +34,7 @@ import listener.OnExpChangeEvent;
 import listener.QuitEvent;
 import listener.ToggleFlightEvent;
 import listener.OnInventoryClick;
+import listener.PlayerInteract;
 
 public class Cataklysm extends JavaPlugin{
 
@@ -56,6 +59,8 @@ public class Cataklysm extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(new OnBlockMultiPlaceEvent(), this);
 		Bukkit.getPluginManager().registerEvents(new OnEnterBed(), this);
 		Bukkit.getPluginManager().registerEvents(new MobSpawnEvent(), this);
+		Bukkit.getPluginManager().registerEvents(new BlockPlace(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerInteract(), this);
 
 
 		//Plugin Enable Console Output
@@ -75,6 +80,8 @@ public class Cataklysm extends JavaPlugin{
 		getCommand("coordinates").setExecutor(new CoordinatesCommand());
 		getCommand("serverboost").setExecutor(new ServerboostCommand());
 		getCommand("test").setExecutor(new TestCommand());
+		getCommand("createshop").setExecutor(new CreateShopCommand());
+		
 
 		//-------------Commands--------------------
  
@@ -84,7 +91,8 @@ public class Cataklysm extends JavaPlugin{
 
 		//------------Aray-Lists-------------------
 
-
+		
+		
 	}
 
 	public void onDisable() {
