@@ -18,6 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import commands.FlyCommand;
 import main.Cataklysm;
 
 public class ToggleFlightEvent implements Listener {
@@ -35,9 +36,6 @@ public class ToggleFlightEvent implements Listener {
                 return; // Prevent duplicate timers
             }
 
-            
-            
-            // Create a new repeating task
             BukkitRunnable task = (BukkitRunnable) new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -46,23 +44,21 @@ public class ToggleFlightEvent implements Listener {
                         flightTimers.remove(player);
                         return;
                     }
-                    
 //-------------------------------------------Happening Every 5 Seconds-------------------------------------------
                     
                     
                     if (hasFlightCrystal(player)) {
-                        durabilityDecrease(player); // Reduce durability              
-                    } else if(!player.hasPermission("cataklysm.fly")){
+                        durabilityDecrease(player);          
+                    } else if(player.hasPermission("cataklysm.fly") || FlyCommand.fly.contains(player)){
+                    	return;
+                    } else {
 	                    player.sendMessage("§cYour Flight has been disabled due to missing Flight Crystal!");
                         player.setAllowFlight(false);
                         this.cancel();
                         flightTimers.remove(player);
                     }
-                }
-                
-                
-            }; // Run every 5 seconds (100 ticks)
-            
+                }     
+            };
             task.runTaskTimer(plugin, 0, 100); // Run every 5 seconds (100 ticks)
             flightTimers.put(player, task);
 
@@ -81,64 +77,54 @@ public class ToggleFlightEvent implements Listener {
 	    String itemName = null;
 	    List<String> itemLore = new ArrayList<>();
 
-	    // Iterate through the player's inventory
 	    for (ItemStack stack : player.getInventory().getContents()) {
 	        if (stack == null || !stack.hasItemMeta()) {
-	            continue; // Skip if the stack has no ItemMeta
+	            continue;
 	        }
 
 	        // Get the ItemMeta
 	        ItemMeta meta = stack.getItemMeta();
 	        if (meta == null) {
-	            continue; // Skip if ItemMeta is null
+	            continue;
 	        }
 
-	        // Get the display name and lore
 	        itemName = meta.getItemName();
 	        itemLore = meta.getLore();
 
-
-	        // Check if the item has the correct name and lore
 	        if (itemName != null && itemName.equals("§d§lFlight Crystal")) {
 	        	
 	            if (itemLore == null || itemLore.size() <= 1) {
 	                invalidCrystal(player, stack, itemName, itemLore);
-	                continue; // Skip this item if lore is missing or too short
+	                continue;
 	            }
 	        	
-	            String loreLine = itemLore.get(1); // Get the second line of lore
+	            String loreLine = itemLore.get(1);
 	            if (loreLine != null && itemLore.size() > 1 && loreLine.contains("Durability:")) {
-	                return true; // Item is found with correct lore
+	                return true;
 	            } else {
 	            	invalidCrystal(player, stack, itemName, itemLore);
 	            }
 	        }
 	    }
-	    // If we don't find a valid flight crystal
 	    return false;
 	}
 	
 	public void durabilityDecrease(Player player) {
 	    if (player == null) return;
 	    
-	    // Iterate through the player's inventory
 	    for (ItemStack stack : player.getInventory().getContents()) {
 	        if (stack == null || !stack.hasItemMeta()) { 
-	            continue; // Skip if the stack has no ItemMeta
+	            continue; 
 	        }
 
-            
-	        // Get the ItemMeta
 	        ItemMeta meta = stack.getItemMeta();
 	        if (meta == null) {
-	            continue; // Skip if ItemMeta is null
+	            continue;
 	        }
 
-	        // Get the display name and lore
 	        String itemName = meta.getItemName();
 	        List<String> itemLore = meta.getLore();
 
-	        // Ensure the item matches the Flight Crystal
 	        if (itemName != null && itemName.equals("§d§lFlight Crystal") && itemLore != null && itemLore.size() > 1) {
 	            String loreLine = itemLore.get(1); // Get the second line of lore
 
@@ -156,8 +142,8 @@ public class ToggleFlightEvent implements Listener {
 
 	                // Update the lore with the new durability
 	                itemLore.set(1, "§r§7Durability: " + newDurability);
-	                meta.setLore(itemLore); // Apply changes to ItemMeta
-	                stack.setItemMeta(meta); // Apply changes to ItemStack 
+	                meta.setLore(itemLore);
+	                stack.setItemMeta(meta);
 
 	                // If durability reaches 0, remove the item
 	                if (newDurability == 0) {
@@ -170,12 +156,10 @@ public class ToggleFlightEvent implements Listener {
 	                }
 	            } catch (NumberFormatException e) {
 	                    // Handle invalid number (too large, corrupted, etc.)
-	                    invalidCrystal(player, stack, itemName, itemLore);
-	                    
+	                    invalidCrystal(player, stack, itemName, itemLore);      
 	                }
-	                
-	                
-	                return; // Exit after modifying the first found crystal
+
+	                return;
 	            } else {
 	            	
 	            	invalidCrystal(player, stack, itemName, itemLore);

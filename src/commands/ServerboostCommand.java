@@ -28,7 +28,7 @@ public class ServerboostCommand implements CommandExecutor{
 					Inventory inv = Bukkit.createInventory(null, 9, "§d§lServer Boosts");
 					ItemStack potion = Cataklysm.createCustomItem(Material.POTION, "§d§lMystical Potion", "§6Random positive effect that lasts 10 minutes", "§6Cost§7: §e8 Diamonds", "§7(Could give an effect that's already active!)");
 					ItemStack xp = Cataklysm.createCustomItem(Material.EXPERIENCE_BOTTLE, "§a§lExtreme Experience", "§6Doubles XP for 30 minutes", "§6Cost§7: §e16 Diamonds");
-					ItemStack placeholder = Cataklysm.createCustomItem(Material.BARRIER, "§cComming soon...");
+					ItemStack placeholder = Cataklysm.createCustomItem(Material.RED_STAINED_GLASS_PANE, "§cComming soon...");
 					ItemStack glass = Cataklysm.createCustomItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§7");
 					for (int i = 0; i < inv.getSize(); i++) {
 					    inv.setItem(i, glass);

@@ -52,7 +52,6 @@ public class VanishCommand implements CommandExecutor, Listener{
 					player.setCanPickupItems(false);
 					player.setCollidable(false);
 					player.sendMessage("§aYou are now vanished!");
-					//macht den Spieler wieder sichtbar
 					for
 					(Player all : Bukkit.getServer().getOnlinePlayers())
 						if(all.hasPermission("cataklysm.vanish.see")){}

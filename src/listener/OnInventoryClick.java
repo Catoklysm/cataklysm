@@ -1,20 +1,32 @@
 package listener;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Container;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import configManager.configManager;
 import main.Cataklysm;
 
 
@@ -43,19 +55,27 @@ public class OnInventoryClick implements Listener {
             notRemoved+=item.getAmount();
         }
         return notRemoved;
+        
     }
+    
+    public static int giveItems(Inventory inventory, Material type, int amount) {
+        if (type == null || inventory == null || amount <= 0)
+            return -1;
 
+        ItemStack item = new ItemStack(type, amount);
+        inventory.addItem(item);
+        return amount;
+    }
+    
 	
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e) {
 	    Player player = (Player) e.getWhoClicked();
 	    ItemStack clicked = e.getCurrentItem();
 
-	    // Prevent errors with empty slots
-	    if (clicked == null || clicked.getType() == Material.AIR) {
+	   if (clicked == null || clicked.getType() == Material.AIR && !e.getView().getTitle().contains("§eTrade Shop")) {
 	        return;
 	    }
-
 	 
 // ------------------------------------------------ World Border Increase ------------------------------------------------
 	    
@@ -224,10 +244,229 @@ public class OnInventoryClick implements Listener {
 	        
 	        }
 	        
+	     // ------------------------------------------------ Trade Shop ------------------------------------------------	        
 	        
+	    } else if (e.getView().getTitle().contains("§eTrade Shop")) {
+	    	
+	    	e.setCancelled(true);
+
+	    	//player.sendMessage("Click: " + e.getClick() + ", Action: " + e.getAction() + ", Slot: " + e.getSlot() + ", Raw Slot: " + e.getRawSlot() + ", Cursor: " + e.getCursor());
+	    	
+	    	Map<UUID, String> activeShopUUID = InventoryOpen.activeShopUUID;
+	    	Map<UUID, String> activeShopID = InventoryOpen.activeShopID;	    	
+	    	String shopUUID = activeShopUUID.get(player.getUniqueId());  // Retrieve shopID from the map
+	    	String shopID = activeShopID.get(player.getUniqueId());  // Retrieve shopID from the map
+
+
+	        if (shopUUID == null) {
+	            player.sendMessage("§cYour Session is experied. Error 1");
+	            return;
+	        }
+
+	        if (shopID == null) {
+	            player.sendMessage("§cYour Session is experied. Error 2");
+	            return;
+	        }
+
+	        UUID ownerUUID = UUID.fromString(shopUUID);
+			configManager.PlayerData data = configManager.getPlayerData(ownerUUID);
+			FileConfiguration config = data.getConfig();
+
+	        if (!config.contains("shop." + shopID)) {
+	            player.sendMessage("§cThis shop does not exist or has been deleted.");
+	            return;
+	        }
+
+	        Material costItem = Material.matchMaterial(config.getString("shop." + shopID + ".costItem"));
+	        int costAmount = config.getInt("shop." + shopID + ".costAmount", 1);
+
+	        if (costItem == null) {
+	        	player.sendMessage("§cThis shop is misconfigured. Please contact the owner or an admin.");
+	            return;
+	        }
+
+//---------------------------------Owner Inventory----------------------------------
 	        
+			if (player.getUniqueId().equals(ownerUUID)) {
+
+				if ((e.getRawSlot() == 13)) {
+					e.setCancelled(true); 
+				} else{
+					e.setCancelled(false); 
+					return;
+				}
+				
+				if(e.getClick() == ClickType.LEFT || e.getClick() == ClickType.RIGHT){
+					
+					boolean emptyCursor = (e.getCursor() == null || e.getCursor().getType() == Material.AIR);
+					if(emptyCursor && e.getRawSlot() < e.getView().getTopInventory().getSize()) return;
+					
+					//Set Shop Price and Item
+					
+					if(e.getSlot() == 13 && !emptyCursor) {
+						
+						config.set("shop." + shopID + ".costItem", e.getCursor().getType().toString());
+						config.set("shop." + shopID + ".costAmount", e.getCursor().getAmount());
+						data.save();
+						
+					    player.sendMessage("§aShop cost updated.");
+					    player.closeInventory();
+
+					} 
+
+				
+				} else if(e.getClick() == ClickType.SHIFT_LEFT && (e.getRawSlot() == 13)){
+					
+					Inventory inv = Bukkit.createInventory(null, 27, "§cDELETE §eTrade Shop");
+					
+					ItemStack glass = Cataklysm.createCustomItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§7");
+					ItemStack deleteShop = Cataklysm.createCustomItem(
+							 Material.RED_STAINED_GLASS_PANE,
+							"§c§lCONFIRM SHOP DELETE",
+							"§7Shift Right Click to confirm!",
+							"§7Contents will presist."
+						);
+					
+					for (int i = 0; i < inv.getSize(); i++) {
+					    inv.setItem(i, glass);
+					}
+					
+					inv.setItem(13, deleteShop);
+					 player.openInventory(inv);
+				}
+				
+				//Shop Deletion
+				if (e.getView().getTitle().contains("§cDELETE §eTrade Shop") && e.getRawSlot() == 13 && (e.getClick() == ClickType.SHIFT_RIGHT)) {
+					
+				    String[] parts = shopID.split(",");
+				    if (parts.length == 4) {
+				        String worldName = parts[0];
+				        int x = Integer.parseInt(parts[1]);
+				        int y = Integer.parseInt(parts[2]);
+				        int z = Integer.parseInt(parts[3]);
+
+				        World world = Bukkit.getWorld(worldName);
+				        if (world == null) {
+				        	return;
+				        }
+				            Location location = new Location(world, x, y, z);
+				            Block block = location.getBlock();
+					
+				    if (block.getState() instanceof Container container) {
+				    	
+				        	container.setCustomName(null);
+				        	container.update(true, true);		
+				        
+				        	PersistentDataContainer dataContainer = container.getPersistentDataContainer();
+				        	dataContainer.remove(new NamespacedKey(Cataklysm.getInstance(), "owner_uuid"));
+				        	dataContainer.remove(new NamespacedKey(Cataklysm.getInstance(), "shop_id"));
+				        	container.update(true, true);
+				        
+							config.set("shop." + shopID, null);
+							data.save();
+						
+	        			player.sendMessage("§cYour shop has been deleted.");
+	        			player.closeInventory();
+							}
+	            		}
+					
+				}
+//---------------------------------User Inventory----------------------------------
+			}else { 
+				
+			if (e.isShiftClick() || e.getClick() == ClickType.DOUBLE_CLICK || e.getClick() == ClickType.NUMBER_KEY) {
+			        e.setCancelled(true);
+			        return;
+			}
+			
+	        ItemStack cursor = e.getCursor();
+	        ItemStack current = e.getCurrentItem();
+
+	        boolean hasItemOnCursor = cursor != null && cursor.getType() != Material.AIR;
+	        boolean isTargetEmpty = current == null || current.getType() == Material.AIR;
+
+	        // Block all placement into empty slots
+	        if (hasItemOnCursor && isTargetEmpty && e.getRawSlot() < e.getView().getTopInventory().getSize()) {
+	            e.setCancelled(true);
+	            return;
+	        }
+				
+			if (e.getRawSlot() < e.getView().getTopInventory().getSize()) {
+		        // Allow only if player is offering the exact correct item & amount
+		        if (e.getCursor() != null
+		                && e.getCursor().getType() == costItem
+		                && e.getCursor().getAmount() == costAmount
+		                && e.getCurrentItem() != null
+		                && e.getCurrentItem().getType() != Material.AIR
+		                && e.getCurrentItem().getType() != costItem) {
+
+		            e.setCancelled(false);
+
+		        } else {
+		            e.setCancelled(true);
+		        }
+		        return;
+		    }
+
+			if (e.getClick() == ClickType.DOUBLE_CLICK
+	    		    || e.getAction() == InventoryAction.COLLECT_TO_CURSOR
+	    		    || e.isShiftClick()
+	    		    || e.getClick() == ClickType.NUMBER_KEY
+	    		    || e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY
+	    		    || e.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
+	    		    return;
+	    		}
+			
+		    e.setCancelled(false);
+		    
+				}
+	    	}
+	    
+	    if(e.isCancelled() == true) {
+	    	Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Cataklysm.getInstance(), new Runnable()
+			{   @Override
+				public void run() {
+				player.updateInventory();
+				}
+			}, 2); 
 	    }
-	    	
-	    	
+	    
+		}
+
+	  
+	
+    
+	public static int getFreeSpace(Inventory inventory, Material type) {
+	    int space = 0;
+	    int maxStackSize = type.getMaxStackSize();
+
+	    for (int slot = 0; slot <= 35; slot++) {
+	        ItemStack item = inventory.getItem(slot);
+
+	        if (item == null || item.getType() == Material.AIR) {
+	            space += maxStackSize;
+	        } else if (item.getType() == type) {
+	            int remaining = maxStackSize - item.getAmount();
+	            if (remaining > 0) {
+	                space += remaining;
+	            }
+	        }
+	    }
+
+	    return space;
 	}
+	public static int getItemAmount(Inventory inventory, Material type) {
+	    int amount = 0;
+
+	    for (int slot = 0; slot <= 35; slot++) {
+	        ItemStack item = inventory.getItem(slot);
+
+	        if (item != null && item.getType() == type) {
+	            amount += inventory.getItem(slot).getAmount();
+	        }
+	    }
+
+	    return amount;
+	}
+	    	
 }

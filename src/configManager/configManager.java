@@ -8,6 +8,7 @@ import main.Cataklysm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 public class configManager {
 
@@ -31,7 +32,6 @@ public class configManager {
         public void save() {
             try {
                 config.save(file);
-                Cataklysm.getInstance().getLogger().info("Saved data for " + file.getName());
             } catch (IOException e) {
                 Cataklysm.getInstance().getLogger().severe("Failed to save data for " + file.getName());
                 e.printStackTrace();
@@ -51,6 +51,26 @@ public class configManager {
                 playerFile.createNewFile();
             } catch (IOException e) {
                 Cataklysm.getInstance().getLogger().severe("Failed to create data file for " + player.getName());
+                e.printStackTrace();
+            }
+        }
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
+        return new PlayerData(playerFile, config);
+    }
+    
+    public static PlayerData getPlayerData(UUID playerUUID) {
+        File dataFolder = new File(Cataklysm.getInstance().getDataFolder(), "playerData");
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+
+        File playerFile = new File(dataFolder, playerUUID + ".yml");
+        if (!playerFile.exists()) {
+            try {
+                playerFile.createNewFile();
+            } catch (IOException e) {
+                Cataklysm.getInstance().getLogger().severe("Failed to create data file for " + playerUUID);
                 e.printStackTrace();
             }
         }

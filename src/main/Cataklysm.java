@@ -26,6 +26,8 @@ import commands.SpawnCommand;
 import commands.TestCommand;
 import commands.VanishCommand;
 import listener.BlockPlace;
+import listener.InventoryDrag;
+import listener.InventoryOpen;
 import listener.JoinEvent;
 import listener.MobSpawnEvent;
 import listener.OnBlockMultiPlaceEvent;
@@ -60,8 +62,9 @@ public class Cataklysm extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(new OnEnterBed(), this);
 		Bukkit.getPluginManager().registerEvents(new MobSpawnEvent(), this);
 		Bukkit.getPluginManager().registerEvents(new BlockPlace(), this);
+		Bukkit.getPluginManager().registerEvents(new InventoryOpen(), this);
+		Bukkit.getPluginManager().registerEvents(new InventoryDrag(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerInteract(), this);
-
 
 		//Plugin Enable Console Output
 		System.out.println(ANSI_YELLOW + "Cataklysm: Online"+ ANSI_RESET);

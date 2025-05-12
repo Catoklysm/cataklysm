@@ -21,6 +21,11 @@ public class CreateShopCommand implements CommandExecutor, Listener{
 		
 		if(sender instanceof Player) {
 			Player player = (Player) sender;
+			
+			if(!player.hasPermission("cataklysm.shop.create")) {
+				player.sendMessage(Cataklysm.Permission + "§c[Permission: §6cataklysm.shop.create§c]");
+				return false;
+			}
 		
 			if(createshop.contains(player)) {
 				createshop.remove(player);
@@ -28,13 +33,15 @@ public class CreateShopCommand implements CommandExecutor, Listener{
 				return false;
 			}
 			
-			player.sendMessage("§aYou can now place a chest, barrel or shulker to create a shop!");
+			player.sendMessage("§aYou can now place a chest, barrel or shulker to create a shop for the next 10 seconds!");
 			createshop.add(player);
 			
 	        new BukkitRunnable() {
 	            public void run() {
+	            	if(createshop.contains(player)) {
 					player.sendMessage("§aShop creation has ended!");
 					createshop.remove(player);
+	            	}
 	            }
 	        }.runTaskLater(Cataklysm.getInstance(), 200);
 

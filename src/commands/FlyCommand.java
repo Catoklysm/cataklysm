@@ -1,5 +1,8 @@
 package commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,6 +17,7 @@ import listener.ToggleFlightEvent;
 public class FlyCommand implements CommandExecutor {
 	
     private final Plugin plugin = Cataklysm.getPlugin(Cataklysm.class);
+	public static List<Player> fly = new ArrayList<>();
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String lable, String[] args) 
@@ -52,12 +56,14 @@ public class FlyCommand implements CommandExecutor {
 							if(target.getAllowFlight()) 
 							{
 							target.setAllowFlight(false);
+							fly.remove(target);
 							target.sendMessage("§aYour flight has been disabled!");
 							player.sendMessage("§aYou disabled §e" + target.getName() + "§a's flight!");
 							} 
 							else if(target.getAllowFlight() == false) 
 							{
 							target.setAllowFlight(true);
+							fly.add(target);
 							target.sendMessage("§aYour flight has been enabled!");
 							player.sendMessage("§aYou enabled §e" + target.getName() + "§a's flight!");
 							}
